@@ -1001,6 +1001,42 @@
       font-size: 9px; font-weight: 700; letter-spacing: 0.05em;
       text-transform: uppercase; border-radius: 3px; padding: 2px 5px;
     }
+
+    /* ── Phone layout (Scream Trainer PWA). Kept last so it overrides the
+       wider-breakpoint shell rules above. Desktop is untouched. ───────── */
+    .scr-back {
+      display: none; align-items: center; gap: 6px;
+      font: inherit; font-size: 13px; font-weight: 700;
+      color: var(--accent); background: rgba(128,216,179,0.1);
+      border: 1px solid rgba(128,216,179,0.3); border-radius: 6px;
+      padding: 8px 13px; cursor: pointer; margin: 0 0 14px;
+    }
+    .scr-back:hover { background: rgba(128,216,179,0.18); }
+    @media (max-width: 760px) {
+      .app-topbar { padding: 9px 12px 0; }
+      .app-header { margin-bottom: 6px; }
+      .app-header h1 { font-size: 17px; }
+      .app-header p { display: none; }
+      .tabs { overflow-x: auto; scrollbar-width: none; }
+      .tabs::-webkit-scrollbar { display: none; }
+      .tab-button { white-space: nowrap; padding: 9px 13px; }
+      .tab-content { padding: 16px 14px 40px; }
+
+      /* Two-pane shells collapse to a single column on a phone */
+      .layers-shell, .mix-shell, .scr-shell, .rec-shell { grid-template-columns: 1fr; }
+      .layers-sidebar, .mix-sidebar { border-right: none; }
+      .layers-detail { padding: 16px 14px 40px; }
+
+      /* SCREAM master-detail: show the roadmap list OR the open item, not both */
+      .scr-mview-list .layers-detail { display: none; }
+      .scr-mview-detail .mix-sidebar { display: none; }
+      .scr-back { display: inline-flex; }
+
+      /* roomier tap targets in the roadmap list */
+      .scr-ms-link { padding: 10px 10px; }
+      .scr-ms-title { font-size: 13.5px; }
+      .scr-ms-num { font-size: 11px; }
+    }
   </style>
 </head>
 <body>
@@ -7589,7 +7625,7 @@
         mix: { mode: "symptom", query: "", descriptor: null, location: null, cardId: null },
         // SCREAM tab: roadmap (default) / vocal-day check / warm-up. Unlocked milestones persist;
         // vocal-day check answers stay transient.
-        scream: { mode: "roadmap", milestoneId: null, unlocked: Object.create(null), check: { redflag: null, pain: null, hoarse: null, top: null, fatigue: null, days: null } },
+        scream: { mode: "roadmap", milestoneId: null, mobileView: "list", unlocked: Object.create(null), check: { redflag: null, pain: null, hoarse: null, top: null, fatigue: null, days: null } },
         // RECORD tab: selected capture card. In-memory only (no persistence per policy); current card derives from the hash.
         record: { cardId: null }
       };
@@ -9895,7 +9931,11 @@
         return renderScreamRoadmapDetail();
       }
       function renderScreamTab() {
-        return "<div class=\"mix-shell scr-shell\">" + renderScreamSidebar() + "<div class=\"layers-detail narrow\">" + renderScreamDetail() + "</div></div>";
+        const mview = state.scream.mobileView === "detail" ? "scr-mview-detail" : "scr-mview-list";
+        return "<div class=\"mix-shell scr-shell " + mview + "\">" + renderScreamSidebar() +
+          "<div class=\"layers-detail narrow\">" +
+          "<button type=\"button\" class=\"scr-back\" data-scream-back>← All milestones</button>" +
+          renderScreamDetail() + "</div></div>";
       }
 
       function renderPlaceholder(tabId) {
@@ -10328,10 +10368,12 @@
           return;
         }
         // SCREAM tab
+        const scrBack = event.target.closest("[data-scream-back]");
+        if (scrBack) { event.preventDefault(); state.scream.mobileView = "list"; refreshScream(); return; }
         const scrMode = event.target.closest("[data-scream-mode]");
-        if (scrMode) { event.preventDefault(); state.scream.mode = scrMode.getAttribute("data-scream-mode"); refreshScream(); return; }
+        if (scrMode) { event.preventDefault(); state.scream.mode = scrMode.getAttribute("data-scream-mode"); state.scream.mobileView = "detail"; refreshScream(); return; }
         const scrMs = event.target.closest("[data-scream-ms]");
-        if (scrMs) { event.preventDefault(); state.scream.milestoneId = scrMs.getAttribute("data-scream-ms"); if (state.scream.mode !== "roadmap") state.scream.mode = "roadmap"; refreshScream(); return; }
+        if (scrMs) { event.preventDefault(); state.scream.milestoneId = scrMs.getAttribute("data-scream-ms"); if (state.scream.mode !== "roadmap") state.scream.mode = "roadmap"; state.scream.mobileView = "detail"; refreshScream(); return; }
         const scrUnlock = event.target.closest("[data-scream-unlock]");
         if (scrUnlock) {
           event.preventDefault();
