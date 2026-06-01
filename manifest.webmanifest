@@ -1,0 +1,16 @@
+{
+  "name": "Scream Trainer",
+  "short_name": "Scream",
+  "description": "Vocal scream progression, warm-up, and vocal-day safety check.",
+  "start_url": "./vocal.html#tab:scream",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0f1318",
+  "theme_color": "#0f1318",
+  "icons": [
+    { "src": "./icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "./icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "./icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
