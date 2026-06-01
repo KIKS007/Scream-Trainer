@@ -267,14 +267,8 @@
     .scr-safety-banner { margin-bottom: 16px; }
     .scr-next-link { font: inherit; font-size: 13px; font-weight: 600; color: var(--accent); background: rgba(128,216,179,0.1); border: 1px solid rgba(128,216,179,0.3); border-radius: 6px; padding: 5px 11px; cursor: pointer; }
     .scr-next-link:hover { background: rgba(128,216,179,0.18); }
-    .scr-msnav { display: flex; gap: 8px; margin-top: 22px; }
-    .scr-msnav-btn { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; gap: 2px; font: inherit; text-align: left; padding: 9px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel-2); color: var(--text); cursor: pointer; }
-    .scr-msnav-next { text-align: right; }
-    button.scr-msnav-btn:hover { border-color: rgba(128,216,179,0.45); }
-    .scr-msnav-end { cursor: default; opacity: 0.65; }
-    .scr-msnav-dir { font-size: 11px; font-weight: 700; letter-spacing: 0.04em; color: var(--accent); }
-    .scr-msnav-end .scr-msnav-dir { color: var(--muted); }
-    .scr-msnav-label { font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    /* Swipe hint (phone only; hidden on desktop where swipe doesn't apply) */
+    .scr-swipe-hint { display: none; text-align: center; font-size: 11px; color: var(--dim); margin: 26px 0 0; letter-spacing: 0.03em; }
     .scr-check-fields { display: flex; flex-direction: column; gap: 14px; margin: 18px 0; }
     .scr-check-label { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
     .scr-check-opts { display: flex; flex-wrap: wrap; gap: 6px; }
@@ -1034,8 +1028,7 @@
       .layers-shell, .mix-shell, .scr-shell, .rec-shell { grid-template-columns: 1fr; }
       .layers-sidebar, .mix-sidebar { border-right: none; }
       .layers-detail { padding: 16px 14px 40px; }
-      /* SCREAM detail: no bottom padding so the sticky prev/next sits flush */
-      .scr-mview-detail .layers-detail { padding-bottom: 0; }
+      .scr-swipe-hint { display: block; }
 
       /* SCREAM master-detail: show the roadmap list OR the open item, not both */
       .scr-mview-list .layers-detail { display: none; }
@@ -1046,13 +1039,6 @@
       .scr-ms-link { padding: 10px 10px; }
       .scr-ms-title { font-size: 13.5px; }
       .scr-ms-num { font-size: 11px; }
-
-      /* prev/next stays pinned to the bottom so it's reachable one-handed */
-      .scr-msnav {
-        position: sticky; bottom: 0; z-index: 2;
-        margin: 22px -14px 0; padding: 10px 14px calc(12px + env(safe-area-inset-bottom));
-        background: linear-gradient(to top, var(--bg) 78%, rgba(15,19,24,0));
-      }
     }
   </style>
 </head>
@@ -9886,9 +9872,6 @@
           "<p class=\"scr-video-cap\">" + escapeHtml(v.title) + " — opens on YouTube in a new tab. Watch it against the safety notes here: not every online demo uses safe technique.</p>");
       }
       function renderScreamMilestoneDetail(m) {
-        const idx = SCREAM_MILESTONES.indexOf(m);
-        const prev = idx > 0 ? SCREAM_MILESTONES[idx - 1] : null;
-        const next = idx >= 0 && idx < SCREAM_MILESTONES.length - 1 ? SCREAM_MILESTONES[idx + 1] : null;
         let html = "<div class=\"card-header\"><div class=\"scr-detail-phase\">Phase " + escapeHtml(m.phaseTitle) + "</div><h2 class=\"card-title\">" + escapeHtml(m.num + " · " + m.title) + "</h2></div>";
         html += "<div class=\"scr-current-note\">This is your current focus — it is remembered when you return.</div>";
         html += renderScreamUnlockToggle(m);
@@ -9898,14 +9881,8 @@
         if (m.safety) html += renderDetailSection("Safety", "<p class=\"scr-safety\">" + escapeHtml(m.safety) + "</p>");
         html += renderScreamMilestoneVideo(m);
         if (m.why && m.why.length) html += renderWhy2(m.why);
-        // Prev / next footer — also driven by swipe (mobile) and Up/Down (desktop).
-        let nav = "<div class=\"scr-msnav\">";
-        if (prev) nav += "<button type=\"button\" class=\"scr-msnav-btn scr-msnav-prev\" data-scream-ms=\"" + escapeHtml(prev.id) + "\"><span class=\"scr-msnav-dir\">← Prev</span><span class=\"scr-msnav-label\">" + escapeHtml(prev.num + " · " + prev.title) + "</span></button>";
-        else nav += "<button type=\"button\" class=\"scr-msnav-btn scr-msnav-prev\" data-scream-back><span class=\"scr-msnav-dir\">← Back</span><span class=\"scr-msnav-label\">All milestones</span></button>";
-        if (next) nav += "<button type=\"button\" class=\"scr-msnav-btn scr-msnav-next\" data-scream-ms=\"" + escapeHtml(next.id) + "\"><span class=\"scr-msnav-dir\">Next →</span><span class=\"scr-msnav-label\">" + escapeHtml(next.num + " · " + next.title) + "</span></button>";
-        else nav += "<span class=\"scr-msnav-btn scr-msnav-next scr-msnav-end\"><span class=\"scr-msnav-dir\">Top ✓</span><span class=\"scr-msnav-label\">Keep refining &amp; managing load</span></span>";
-        nav += "</div>";
-        html += nav;
+        // Swipe ← / → steps milestones on a phone (handler near popstate). Dim hint only.
+        html += "<p class=\"scr-swipe-hint\">‹ swipe to move between milestones ›</p>";
         return html;
       }
       function renderScreamRoadmapDetail() {
