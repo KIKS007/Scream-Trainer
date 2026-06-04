@@ -2,7 +2,7 @@
 // Strategy: stale-while-revalidate. Cached assets serve instantly (works
 // offline in the shower with no signal); a fresh copy is fetched in the
 // background and used on the next open. Bump CACHE to force-evict on deploy.
-const CACHE = "scream-v4";
+const CACHE = "scream-v5"; // v5: SCREAM safety reframings (2026-06-04) — relabel coaching belief vs medical fact
 const ASSETS = [
   "./vocal.html",
   "./manifest.webmanifest",
